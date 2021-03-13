@@ -21,9 +21,13 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        Log.d(LOG_TAG, "blarg")
         view.todoRecycler.layoutManager = LinearLayoutManager(this)
-        Log.d(LOG_TAG, "Foo")
         view.todoRecycler.adapter = ToDoAdapter(listOfMyStuff)
+
+        setSupportActionBar(view.toolbar)
+
+
     }
+
+
 }

@@ -9,6 +9,7 @@ class ToDoAdapter(private val todoItems: MutableList<String>): RecyclerView.Adap
 
     class ViewHolder(private val binding: TodoCardBinding): RecyclerView.ViewHolder(binding.root) {
         fun bind(todoItem: String){
+            println("TODO adapter tingemajig")
             binding.placeholder.text = todoItem
         }
     }
@@ -22,4 +23,5 @@ class ToDoAdapter(private val todoItems: MutableList<String>): RecyclerView.Adap
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(TodoCardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
+
 }
