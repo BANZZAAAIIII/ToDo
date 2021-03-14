@@ -9,18 +9,18 @@ import no.uia.todo.databinding.TodoCardBinding
 
 
 class ToDoAdapter(private val todoItems: MutableList<ToDo>, private val onClick: (ToDo) -> Unit): RecyclerView.Adapter<ViewHolder>() {
-    override fun getItemCount(): Int = todoItems.size
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(todoItems[position])
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             TodoCardBinding.inflate(LayoutInflater.from(parent.context), parent, false),
             onClick
         )
     }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(todoItems[position])
+    }
+
+    override fun getItemCount(): Int = todoItems.size
 }
 
 class ViewHolder(binding: TodoCardBinding, private val  onClick: (ToDo) -> Unit): RecyclerView.ViewHolder(binding.root) {
