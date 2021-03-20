@@ -8,7 +8,10 @@ import no.uia.todo.data.ToDo
 import no.uia.todo.databinding.TodoListCardBinding
 
 
-class ToDoAdapter(private val todoList: MutableList<ToDo>, private val onClick: (Int) -> Unit) : RecyclerView.Adapter<ViewHolder>() {
+class ToDoAdapter(
+        private val todoList: MutableList<ToDo>,
+        private val onClick: (Int) -> Unit
+): RecyclerView.Adapter<ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
             TodoListCardBinding.inflate(LayoutInflater.from(parent.context), parent, false),
@@ -23,8 +26,12 @@ class ToDoAdapter(private val todoList: MutableList<ToDo>, private val onClick: 
     override fun getItemCount(): Int = todoList.size
 }
 
-class ViewHolder(binding: TodoListCardBinding, private val  onClick: (Int) -> Unit): RecyclerView.ViewHolder(binding.root) {
+class ViewHolder(
+        binding: TodoListCardBinding,
+        private val  onClick: (Int) -> Unit
+): RecyclerView.ViewHolder(binding.root) {
     private val view = binding.root
+
     fun bind(todoItem: ToDo, position: Int) {
         view.placeholder.text = todoItem.toString()
         view.setOnClickListener{onClick.invoke(position)}

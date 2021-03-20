@@ -1,9 +1,13 @@
 package no.uia.todo
 
+import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
@@ -14,14 +18,12 @@ import no.uia.todo.databinding.TodoItemFragmentBinding
 import no.uia.todo.viewmodel.ToDoViewModel
 
 class ToDoItemFragment : Fragment() {
+    private val LOG_TAG = "TODO:ToDoItemFragment"
+
     private var _binding: TodoItemFragmentBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var viewModel: ToDoViewModel
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,13 +37,17 @@ class ToDoItemFragment : Fragment() {
         val args: ToDoItemFragmentArgs by navArgs()
         val toDo: ToDo = viewModel.getToDosByID(args.toDoItemId)
 
-        binding.Header1.text = "$toDo"
+        view.Header1.text = "$toDo"
 
+        view.add_new_ToDo_btn.setOnClickListener {
+            val item = view.add_new_ToDo_editText.text.toString()
+            toDo.items?.add(item)
+
+            viewModel.updateToDoItem(args.toDoItemId, item)
+        }
 
         view.todoItemRecycler.layoutManager = LinearLayoutManager(requireActivity())
-        if (toDo.items?.isNotEmpty() == true) {
-            view.todoItemRecycler.adapter = ToDoItemAdapter(toDo.items!!)
-        }
+        view.todoItemRecycler.adapter = ToDoItemAdapter(toDo.items)
 
         return view
     }
