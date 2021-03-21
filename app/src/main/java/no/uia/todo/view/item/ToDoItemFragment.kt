@@ -1,16 +1,13 @@
-package no.uia.todo
+package no.uia.todo.view.item
 
-import android.app.Activity
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.todo_item_fragment.view.*
 import no.uia.todo.data.ToDo
@@ -35,19 +32,30 @@ class ToDoItemFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
 
         val args: ToDoItemFragmentArgs by navArgs()
-        val toDo: ToDo = viewModel.getToDosByID(args.toDoItemId)
+        val toDoID = args.toDoItemId
 
-        view.Header1.text = "$toDo"
+        val toDo: ToDo = viewModel.getToDosByID(toDoID)
 
-        view.add_new_ToDo_btn.setOnClickListener {
-            val item = view.add_new_ToDo_editText.text.toString()
-            toDo.items?.add(item)
+        val adapter = ToDoItemAdapter(toDo.items)
+        view.todoItemRecycler.adapter = adapter
+        view.todoItemRecycler.layoutManager = LinearLayoutManager(requireActivity())
+        view.todoItemRecycler.itemAnimator = DefaultItemAnimator()
 
-            viewModel.updateToDoItem(args.toDoItemId, item)
+        view.item_toolbar.title = "$toDo"
+
+        view.add_item_btn.setOnClickListener {
+            val item = view.ToDo_editText.text.toString()
+            view.ToDo_editText.text.clear()
+
+            viewModel.updateToDoItem(toDoID, item)
+            adapter.notifyItemChanged(toDoID)
+
+            // Scrolls down to new item
+            view.todoItemRecycler.adapter?.let { it1 ->
+                view.todoItemRecycler.scrollToPosition(it1.itemCount)
+            }
         }
 
-        view.todoItemRecycler.layoutManager = LinearLayoutManager(requireActivity())
-        view.todoItemRecycler.adapter = ToDoItemAdapter(toDo.items)
 
         return view
     }

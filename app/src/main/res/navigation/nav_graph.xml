@@ -7,16 +7,19 @@
 
     <fragment
         android:id="@+id/toDoListFragment"
-        android:name="no.uia.todo.ToDoListFragment"
+        android:name="no.uia.todo.view.list.ToDoListFragment"
         android:label="todo_list_fragment"
         tools:layout="@layout/todo_list_fragment" >
         <action
             android:id="@+id/action_toDoListFragment_to_toDoItemFragment"
             app:destination="@id/toDoItemFragment" />
+        <action
+            android:id="@+id/action_toDoListFragment_to_toDoListAddDialog"
+            app:destination="@id/toDoListAddDialog" />
     </fragment>
     <fragment
         android:id="@+id/toDoItemFragment"
-        android:name="no.uia.todo.ToDoItemFragment"
+        android:name="no.uia.todo.view.item.ToDoItemFragment"
         android:label="fragment_to_do_item"
         tools:layout="@layout/todo_item_fragment" >
         <action
@@ -26,4 +29,10 @@
             android:name="toDoItemId"
             app:argType="integer" />
     </fragment>
+    <dialog
+        android:id="@+id/toDoListAddDialog"
+        android:name="no.uia.todo.view.list.ToDoListAddDialog"
+        android:label="ToDoListAddDialog"
+        tools:layout="@layout/todo_list_add_dialog" >
+    </dialog>
 </navigation>

@@ -2,4 +2,6 @@
     <string name="app_name">ToDo</string>
     <string name="AddTodo">Add</string>
     <string name="enter_todo">Enter ToDo</string>
+    <string name="delete">Delete</string>
+    <string name="add_todo">Add new ToDo</string>
 </resources>

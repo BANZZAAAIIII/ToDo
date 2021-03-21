@@ -5,13 +5,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    tools:context=".ToDoListFragment">
+    android:fitsSystemWindows="false"
+    tools:context=".view.list.ToDoListFragment">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="250dp"
         android:fitsSystemWindows="true"
         >
 
@@ -45,38 +45,26 @@
 
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/todoRecycler"
+        android:id="@+id/ToDo_List_Recycler"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:clipToPadding="false"
+        tools:listitem="@layout/todo_list_card"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     </androidx.recyclerview.widget.RecyclerView>
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/add_ToDo_fab"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_gravity="bottom"
-        >
-
-        <EditText
-            android:id="@+id/add_new_ToDo_editText"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_weight="15"
-            android:inputType="text"
-            android:hint="@string/enter_todo"
-            android:autofillHints="" />
-
-
-        <Button
-            android:id="@+id/addToDo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/AddTodo" />
-    </LinearLayout>
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_margin="12dp"
+        android:layout_gravity="bottom|end"
+        android:src="@android:drawable/ic_input_add"
+        android:contentDescription="@string/add_todo" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

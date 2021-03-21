@@ -20,17 +20,25 @@ class ToDoViewModel : ViewModel() {
     private val LOG_TAG = "ToDo:ToDoViewModel"
 
 
-    //private val _toDoList: MutableLiveData<ToDo> = MutableLiveData()
-    //val toDoLiveData: LiveData<ToDo> get() = _toDoList
+    private val _toDoList: MutableLiveData<MutableList<ToDo>> = MutableLiveData()
+    val toDoLiveData: LiveData<MutableList<ToDo>> get() = _toDoList
+
+    init {
+        _toDoList.value = todoList
+    }
 
 
     fun getToDos() = todoList
     fun getToDosByID(ID: Int) = todoList[ID]
 
-    fun insertToDo(toDo: ToDo) = todoList.add(toDo)
-    fun updateToDoItem(ID: Int, item: String) {
-        todoList[ID].items?.add(item)
+    fun insertToDo(toDo: ToDo) {
+        todoList.add(toDo)
+        Log.d(LOG_TAG, "Added todo: $toDo")
+    }
 
-        Log.d(LOG_TAG, "Updated todo: ${todoList[ID]}. Now had items: ${todoList[ID].items}")
+    fun updateToDoItem(ID: Int, item: String) {
+        todoList[ID].items.add(item)
+
+        Log.d(LOG_TAG, "Updated todo: ${todoList[ID]}. Now has items: ${todoList[ID].items}")
     }
 }

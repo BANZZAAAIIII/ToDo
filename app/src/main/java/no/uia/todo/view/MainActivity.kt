@@ -1,9 +1,10 @@
-package no.uia.todo
+package no.uia.todo.view
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import no.uia.todo.R
 import no.uia.todo.databinding.ActivityMainBinding
 
 
