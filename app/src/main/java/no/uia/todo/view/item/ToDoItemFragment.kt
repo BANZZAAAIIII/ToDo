@@ -36,11 +36,16 @@ class ToDoItemFragment : Fragment() {
         val toDoListID = args.toDoItemId
 
         // Sets toolbar title
-        view.item_toolbar.title = viewModel.getToDoListName(toDoListID)
+        view.item_title.text = viewModel.getToDoListName(toDoListID)
+
+        // Progressbar setup
+        view.item_progressbar.max = viewModel.getToDoSize(toDoListID)
+        view.item_progressbar.progress = viewModel.getToDoItemChecked(toDoListID)
 
         // Updates viewModel on setOnCheckedChangeListener
         val onChecked = { _: CompoundButton, isChecked:Boolean, toDoItemID:Int ->
             viewModel.toggleToDoItem(toDoListID, toDoItemID, isChecked)
+            view.item_progressbar.progress = viewModel.getToDoItemChecked(toDoListID)
         }
 
         // Recycler view setup
@@ -51,11 +56,13 @@ class ToDoItemFragment : Fragment() {
 
 
         view.add_item_btn.setOnClickListener {
-            val item = view.ToDo_editText.text.toString()
-            view.ToDo_editText.text.clear()
+            val item = view.new_item_editText.text.toString()
+            view.new_item_editText.text.clear()
 
             viewModel.insertToDoItem(toDoListID, item)
             adapter.notifyItemChanged(toDoListID)
+
+            view.item_progressbar.max = viewModel.getToDoSize(toDoListID)
 
             // TODO Fix this
             // Scrolls down to new item
@@ -63,7 +70,6 @@ class ToDoItemFragment : Fragment() {
                 view.todoItemRecycler.scrollToPosition(it1.itemCount)
             }
         }
-
 
         return view
     }

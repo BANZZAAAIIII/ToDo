@@ -50,4 +50,12 @@ class ToDoViewModel : ViewModel() {
     fun getToDoListName(ToDoListID: Int) : String {
         return todoList[ToDoListID].toString()
     }
+
+    fun getToDoItemChecked(ToDoListID: Int) : Int {
+        return todoList[ToDoListID].getAmountChecked()
+    }
+
+    fun getToDoSize(ToDoListID: Int) : Int {
+        return todoList[ToDoListID].items.size
+    }
 }
