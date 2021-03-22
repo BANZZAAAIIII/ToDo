@@ -27,12 +27,16 @@ class ToDoListAdapter(
 
 class ListViewHolder(
         binding: TodoListCardBinding,
-        private val  onClick: (Int) -> Unit
+        private val onClick: (Int) -> Unit
 ): RecyclerView.ViewHolder(binding.root) {
     private val view = binding.root
 
     fun bind(todoItem: ToDo) {
-        view.placeholder.text = todoItem.toString()
+        view.list_name.text = todoItem.toString()
+
         view.setOnClickListener{onClick.invoke(adapterPosition)}
+
+        view.list_progressBar.max = todoItem.items.size
+        view.list_progressBar.progress = todoItem.getAmountChecked()
     }
 }

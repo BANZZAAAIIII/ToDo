@@ -4,13 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.todo_item_fragment.view.*
-import no.uia.todo.data.ToDo
 import no.uia.todo.databinding.TodoItemFragmentBinding
 import no.uia.todo.viewmodel.ToDoViewModel
 
@@ -31,25 +31,33 @@ class ToDoItemFragment : Fragment() {
 
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
 
+        // Args, the ToDoList id, from ToDoListFragment
         val args: ToDoItemFragmentArgs by navArgs()
-        val toDoID = args.toDoItemId
+        val toDoListID = args.toDoItemId
 
-        val toDo: ToDo = viewModel.getToDosByID(toDoID)
+        // Sets toolbar title
+        view.item_toolbar.title = viewModel.getToDoListName(toDoListID)
 
-        val adapter = ToDoItemAdapter(toDo.items)
+        // Updates viewModel on setOnCheckedChangeListener
+        val onChecked = { _: CompoundButton, isChecked:Boolean, toDoItemID:Int ->
+            viewModel.toggleToDoItem(toDoListID, toDoItemID, isChecked)
+        }
+
+        // Recycler view setup
+        val adapter = ToDoItemAdapter(viewModel.getToDosByID(toDoListID).items, onChecked)
         view.todoItemRecycler.adapter = adapter
         view.todoItemRecycler.layoutManager = LinearLayoutManager(requireActivity())
         view.todoItemRecycler.itemAnimator = DefaultItemAnimator()
 
-        view.item_toolbar.title = "$toDo"
 
         view.add_item_btn.setOnClickListener {
             val item = view.ToDo_editText.text.toString()
             view.ToDo_editText.text.clear()
 
-            viewModel.updateToDoItem(toDoID, item)
-            adapter.notifyItemChanged(toDoID)
+            viewModel.insertToDoItem(toDoListID, item)
+            adapter.notifyItemChanged(toDoListID)
 
+            // TODO Fix this
             // Scrolls down to new item
             view.todoItemRecycler.adapter?.let { it1 ->
                 view.todoItemRecycler.scrollToPosition(it1.itemCount)

@@ -22,8 +22,7 @@ class ToDoListAddDialog : BottomSheetDialogFragment() {
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
 
         view.ToDo_add_list_btn.setOnClickListener {
-            val newToDo = ToDo(view.ToDo_list_editText.text.toString(), mutableListOf())
-            viewModel.insertToDo(newToDo)
+            viewModel.insertToDo(view.ToDo_list_editText.text.toString())
             dismiss()
         }
     }

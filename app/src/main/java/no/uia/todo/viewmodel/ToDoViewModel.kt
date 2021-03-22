@@ -5,11 +5,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import no.uia.todo.data.ToDo
+import no.uia.todo.data.ToDoItem
 
 private val todoList: MutableList<ToDo> = mutableListOf(
-        ToDo("Watch Thor Ragnarok", mutableListOf("10 min inn", "20 min inn", "30 min inn", "sv")),
-        ToDo("Work on TODO app", mutableListOf("Hva er en var?", "Hva er en String", "Hva er menigen med livet?")),
-        ToDo("To something else", mutableListOf()),
+        ToDo("Watch Thor Ragnarok", mutableListOf(ToDoItem("10 min inn", true))),
+        ToDo("Work on TODO app",  mutableListOf(ToDoItem("Hva er en var?", false), ToDoItem("Hva er en String", false), ToDoItem("Hva er menigen med livet?", false))),
+        ToDo("Do something else", mutableListOf(ToDoItem("ja?", false), ToDoItem("nei?", true))),
         ToDo("Jeg kommer ikke på mer", mutableListOf()),
         ToDo("blarg 1", mutableListOf()),
         ToDo("blarg 2", mutableListOf()),
@@ -31,14 +32,22 @@ class ToDoViewModel : ViewModel() {
     fun getToDos() = todoList
     fun getToDosByID(ID: Int) = todoList[ID]
 
-    fun insertToDo(toDo: ToDo) {
-        todoList.add(toDo)
+    fun insertToDo(toDo: String) {
+        todoList.add(ToDo(toDo, mutableListOf()))
         Log.d(LOG_TAG, "Added todo: $toDo")
     }
 
-    fun updateToDoItem(ID: Int, item: String) {
-        todoList[ID].items.add(item)
+    fun insertToDoItem(ToDoListID: Int, item: String) {
+        todoList[ToDoListID].items.add(ToDoItem(item, false))
 
-        Log.d(LOG_TAG, "Updated todo: ${todoList[ID]}. Now has items: ${todoList[ID].items}")
+        Log.d(LOG_TAG, "Updated todo: ${todoList[ToDoListID]}. Now has items: ${todoList[ToDoListID].items}")
+    }
+
+    fun toggleToDoItem(ToDoListID: Int, ToDoItemID: Int, checked: Boolean) {
+        todoList[ToDoListID].items[ToDoItemID].done = checked
+    }
+
+    fun getToDoListName(ToDoListID: Int) : String {
+        return todoList[ToDoListID].toString()
     }
 }

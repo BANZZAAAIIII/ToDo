@@ -12,7 +12,11 @@
         tools:layout="@layout/todo_list_fragment" >
         <action
             android:id="@+id/action_toDoListFragment_to_toDoItemFragment"
-            app:destination="@id/toDoItemFragment" />
+            app:destination="@id/toDoItemFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <action
             android:id="@+id/action_toDoListFragment_to_toDoListAddDialog"
             app:destination="@id/toDoListAddDialog" />
@@ -24,7 +28,11 @@
         tools:layout="@layout/todo_item_fragment" >
         <action
             android:id="@+id/action_toDoItemFragment_to_toDoListFragment"
-            app:destination="@id/toDoListFragment" />
+            app:destination="@id/toDoListFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <argument
             android:name="toDoItemId"
             app:argType="integer" />
