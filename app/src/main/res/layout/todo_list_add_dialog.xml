@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="5dp"
+    android:padding="10dp"
     tools:context=".view.list.ToDoListAddDialog">
 
     <LinearLayout
@@ -25,7 +25,7 @@
             android:layout_weight="1"
             android:inputType="text"
             android:focusable="true"
-            android:text="Placeholder" />
+            android:text="" />
 
         <Button
             android:id="@+id/ToDo_add_list_btn"

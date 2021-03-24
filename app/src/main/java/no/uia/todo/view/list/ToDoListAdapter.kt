@@ -3,18 +3,16 @@ package no.uia.todo.view.list
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.todo_list_card.view.*
 import no.uia.todo.data.ToDo
 import no.uia.todo.databinding.TodoListCardBinding
 
 
 class ToDoListAdapter(
-        private val todoList: MutableList<ToDo>,
+        private var todoList: List<ToDo>,
         private val onClick: (Int) -> Unit
 ): RecyclerView.Adapter<ListViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
         val view = TodoListCardBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-
         return ListViewHolder(view, onClick)
     }
 
@@ -23,20 +21,30 @@ class ToDoListAdapter(
     }
 
     override fun getItemCount(): Int = todoList.size
+
+    fun updateAdapter(newToDos: List<ToDo>) {
+        todoList = newToDos
+    }
 }
 
 class ListViewHolder(
-        binding: TodoListCardBinding,
+        private val binding: TodoListCardBinding,
         private val onClick: (Int) -> Unit
 ): RecyclerView.ViewHolder(binding.root) {
-    private val view = binding.root
+    init {
+        binding.root.setOnClickListener {
+            val pos = adapterPosition
+            if (pos != RecyclerView.NO_POSITION) {
+                onClick.invoke(adapterPosition)
+            }
+        }
+    }
 
     fun bind(todoItem: ToDo) {
-        view.list_name.text = todoItem.toString()
-
-        view.setOnClickListener{onClick.invoke(adapterPosition)}
-
-        view.list_progressBar.max = todoItem.items.size
-        view.list_progressBar.progress = todoItem.getAmountChecked()
+        binding.apply {
+            listName.text = todoItem.title
+            listProgressBar.max = todoItem.items.size
+            listProgressBar.progress = todoItem.getAmountChecked()
+        }
     }
 }

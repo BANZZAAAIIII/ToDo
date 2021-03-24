@@ -1,11 +1,10 @@
 package no.uia.todo.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import no.uia.todo.data.ToDo
 import no.uia.todo.data.ToDoItem
+
 
 private val todoList: MutableList<ToDo> = mutableListOf(
         ToDo("Watch Thor Ragnarok", mutableListOf(ToDoItem("10 min inn", true))),
@@ -20,27 +19,40 @@ private val todoList: MutableList<ToDo> = mutableListOf(
 class ToDoViewModel : ViewModel() {
     private val LOG_TAG = "ToDo:ToDoViewModel"
 
-
-    private val _toDoList: MutableLiveData<MutableList<ToDo>> = MutableLiveData()
-    val toDoLiveData: LiveData<MutableList<ToDo>> get() = _toDoList
-
-    init {
-        _toDoList.value = todoList
-    }
-
-
     fun getToDos() = todoList
     fun getToDosByID(ID: Int) = todoList[ID]
 
-    fun insertToDo(toDo: String) {
-        todoList.add(ToDo(toDo, mutableListOf()))
-        Log.d(LOG_TAG, "Added todo: $toDo")
+     fun insertToDo(todoName: String): Boolean {
+         return if (todoName != "") {
+             todoList.add(ToDo(todoName, mutableListOf()))
+             Log.d(LOG_TAG, "Added todo: $todoName")
+             true
+         } else
+             false
     }
 
-    fun insertToDoItem(ToDoListID: Int, item: String) {
-        todoList[ToDoListID].items.add(ToDoItem(item, false))
+    fun insertToDoObject(toDo: ToDo) {
+        todoList.add(toDo)
+    }
 
-        Log.d(LOG_TAG, "Updated todo: ${todoList[ToDoListID]}. Now has items: ${todoList[ToDoListID].items}")
+    fun insertToDoItem(ToDoListID: Int, item: String): Boolean {
+        return if (item != "") {
+            todoList[ToDoListID].items.add(ToDoItem(item, false))
+            Log.d(LOG_TAG, "Updated todo: ${todoList[ToDoListID]}. Now has items: ${todoList[ToDoListID].items}")
+            true
+        } else
+            false
+    }
+
+    fun removeToDo(ToDoListID: Int) {
+        val todoItem = todoList[ToDoListID]
+        todoList.remove(todoItem)
+        Log.d(LOG_TAG, "Removed todo: $todoItem. ToDos left: $todoList")
+    }
+
+    fun removeToDoItem(ToDoListID: Int, ToDoItemID: Int) {
+        val item = todoList[ToDoListID].items[ToDoItemID]
+        todoList[ToDoListID].items.remove(item)
     }
 
     fun toggleToDoItem(ToDoListID: Int, ToDoItemID: Int, checked: Boolean) {

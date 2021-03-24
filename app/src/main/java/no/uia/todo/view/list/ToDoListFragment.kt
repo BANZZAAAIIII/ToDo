@@ -6,12 +6,18 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.todo_list_fragment.*
 import kotlinx.android.synthetic.main.todo_list_fragment.view.*
 import no.uia.todo.R
 import no.uia.todo.databinding.TodoListFragmentBinding
+import no.uia.todo.view.item.ToDoItemAdapter
 import no.uia.todo.viewmodel.ToDoViewModel
 
 class ToDoListFragment : Fragment() {
@@ -39,13 +45,44 @@ class ToDoListFragment : Fragment() {
             findNavController().navigate(arg)
         }
 
-        // Recycler view setup
-        val adapter = ToDoListAdapter(viewModel.getToDos(), onClickToDo)
-        view.ToDo_List_Recycler.adapter = adapter
-        view.ToDo_List_Recycler.layoutManager = LinearLayoutManager(requireActivity())
-        view.ToDo_List_Recycler.itemAnimator = DefaultItemAnimator()
+        // Recycler view and adapter setup
+        val toDoAdapter = ToDoListAdapter(viewModel.getToDos(), onClickToDo)
+        binding.apply {
+            ToDoListRecycler.apply {
+                adapter = toDoAdapter
+                layoutManager = LinearLayoutManager(requireContext())
+                itemAnimator = DefaultItemAnimator()
+                setHasFixedSize(true)
+            }
+            // Sets on swipe action to delete todoitem
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT ) {
+                // onMove returns false as we don't want to use it
+                override fun onMove(recyclerView: RecyclerView,viewHolder: RecyclerView.ViewHolder,target: RecyclerView.ViewHolder): Boolean = false
 
-        // Navigates to dialog when FAB is clicked
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val pos = viewHolder.adapterPosition
+                    val todo = viewModel.getToDosByID(pos)
+
+                    viewModel.removeToDo(pos)
+
+                    toDoAdapter.notifyItemRemoved(pos)
+
+                    /*
+                    ToDo: Fix this
+                    Inserts at the wrong position, should be the same as it was removed from
+                    and recycler view dos not update its view when added
+
+                    Snackbar.make(requireView(), "ToDo Deleted", Snackbar.LENGTH_LONG)
+                            .setAction("Undo") {
+                                viewModel.insertToDoObject(todo)
+                                toDoAdapter.notifyItemChanged(toDoAdapter.itemCount)
+                            }.show()
+                     */
+                }
+            }).attachToRecyclerView(ToDoListRecycler)
+        }
+
+        // Dialog to add new todoList
         view.add_ToDo_fab.setOnClickListener {
             findNavController().navigate(R.id.toDoListAddDialog)
         }
