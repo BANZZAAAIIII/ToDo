@@ -3,6 +3,8 @@ package no.uia.todo.data
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.CoroutineDispatcher
+
 
 
 class ToDoRDS {
@@ -25,4 +27,8 @@ class ToDoRDS {
 
     // returns LiveData as we don't want other classes to change it
     fun getToDos() = toDoLiveData as LiveData<List<ToDo>>
+
+    companion object {
+        val instance = ToDoRDS()
+    }
 }
