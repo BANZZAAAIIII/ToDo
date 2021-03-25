@@ -33,6 +33,8 @@ class ToDoItemFragment : Fragment() {
         val view = binding.root
 
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
+        // TODO: This should be in a constructor in ToDoViewModel
+        viewModel.path = this.activity?.getExternalFilesDir(null)
 
         // Args, the ToDoList id, from ToDoListFragment
         val args: ToDoItemFragmentArgs by navArgs()

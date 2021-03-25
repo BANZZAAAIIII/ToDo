@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.todo_list_add_dialog.view.*
 import no.uia.todo.R
-import no.uia.todo.data.ToDo
 import no.uia.todo.viewmodel.ToDoViewModel
 
 
@@ -22,6 +20,8 @@ class ToDoListAddDialog : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
+        // TODO: This should be in a constructor in ToDoViewModel
+        viewModel.path = this.activity?.getExternalFilesDir(null)
 
         view.ToDo_add_list_btn.setOnClickListener {
             if (viewModel.insertToDo(view.ToDo_list_editText.text.toString())) {

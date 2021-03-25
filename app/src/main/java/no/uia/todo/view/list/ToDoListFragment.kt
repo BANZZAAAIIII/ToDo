@@ -37,6 +37,8 @@ class ToDoListFragment : Fragment() {
         val view = binding.root
 
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
+        // TODO: This should be in a constructor in ToDoViewModel
+        viewModel.path = this.activity?.getExternalFilesDir(null)
 
         // Navigates to ToDoItemFragment with ToDoLists ID when ToDoList is clicked
         val onClickToDo = { pos:Int ->
@@ -63,7 +65,7 @@ class ToDoListFragment : Fragment() {
                     val pos = viewHolder.adapterPosition
                     val todo = viewModel.getToDosByID(pos)
 
-                    viewModel.removeToDo(pos)
+                    viewModel.removeToDo(todo)
 
                     toDoAdapter.notifyItemRemoved(pos)
 
