@@ -1,8 +1,10 @@
 package no.uia.todo.data
 
-data class ToDo( var title: String,
-                 var items: MutableList<ToDoItem> ) {
-
+data class ToDo(
+    val title: String,
+    val items: MutableList<ToDoItem>,
+    val created: Long = System.currentTimeMillis())
+{
     override fun toString(): String {
         return title
     }

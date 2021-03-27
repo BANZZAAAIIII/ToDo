@@ -43,16 +43,14 @@
     </com.google.android.material.appbar.AppBarLayout>
 
 
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ToDo_List_Recycler"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:padding="5dp"
         android:clipToPadding="false"
         tools:listitem="@layout/todo_list_card"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
     </androidx.recyclerview.widget.RecyclerView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

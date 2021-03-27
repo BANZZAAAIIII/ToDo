@@ -25,10 +25,6 @@ class ToDoItemAdapter(
     }
 
     override fun getItemCount(): Int = todoItem.size
-
-    fun updateAdapter(newItems: ToDo) {
-        todoItem = newItems.items
-    }
 }
 
 class ItemViewHolder(
@@ -47,8 +43,6 @@ class ItemViewHolder(
         binding.apply {
             itemName.text = toDo.name
             itemCheckBox.isChecked = toDo.done
-
-
         }
     }
 }

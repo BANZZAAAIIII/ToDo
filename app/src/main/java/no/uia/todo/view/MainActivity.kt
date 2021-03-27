@@ -22,6 +22,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        auth = Firebase.auth
+        signInAnonymously()
+
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -30,9 +33,6 @@ class MainActivity : AppCompatActivity() {
         nav = Navigation.findNavController(
                 this, R.id.nav_fragment)
 
-        // ToDo: Handel failure to sign in
-        auth = Firebase.auth
-        signInAnonymously()
     }
 
     private fun signInAnonymously() {

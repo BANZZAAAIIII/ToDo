@@ -6,12 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="10dp"
-    tools:context=".view.list.ToDoListAddDialog">
+    tools:context=".view.list.ToDoListFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="20dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -20,12 +19,13 @@
 
         <EditText
             android:id="@+id/ToDo_list_editText"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:inputType="text"
             android:focusable="true"
-            android:text="" />
+            android:text=""
+            android:hint="ToDo"/>
 
         <Button
             android:id="@+id/ToDo_add_list_btn"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
-            android:text="Add" />
+            android:text="@string/AddTodo" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,149 +5,172 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.*
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import no.uia.todo.data.ToDo
 import no.uia.todo.data.ToDoItem
-import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
 
-
-private val todoList: MutableList<ToDo> = mutableListOf(
-        ToDo("Watch Thor Ragnarok", mutableListOf(ToDoItem("10 min inn", true))),
-        ToDo("Work on TODO app",  mutableListOf(ToDoItem("Hva er en var?", false), ToDoItem("Hva er en String", false), ToDoItem("Hva er menigen med livet?", false))),
-        ToDo("Do something else", mutableListOf(ToDoItem("ja?", false), ToDoItem("nei?", true))),
-        ToDo("Jeg kommer ikke på mer", mutableListOf()),
-        ToDo("blarg 1", mutableListOf()),
-        ToDo("blarg 2", mutableListOf()),
-        ToDo("blarg 3", mutableListOf())
-)
+private var todoList: MutableList<ToDo> = mutableListOf()
 
 class ToDoViewModel : ViewModel() {
-    val fbPath = "ToDo/ToDoList"
+    private val fbFolder = "ToDo"
+    private val fbPath = "ToDo/"
+
     private val LOG_TAG = "ToDo:ToDoViewModel"
 
-    // TODO: This should be in a constructor!
-    var path: File? = null
+    private val todo = MutableLiveData<List<ToDo>>()
+    val liveDataToDoList: LiveData<List<ToDo>>
+        get() = todo
 
-
-    fun getToDos(): MutableList<ToDo> {
-        downloadFile()
-        return todoList
-    }
-    fun getToDosByID(ID: Int) = todoList[ID]
+    fun getToDosByIndex(index: Int) = todoList[index]
 
      fun insertToDo(todoName: String): Boolean {
-         return if (todoName != "") {
-             todoList.add(ToDo(todoName, mutableListOf()))
-             Log.d(LOG_TAG, "Added todo: $todoName")
-             saveToDoList(toDoListToJSON())
+         return if (todoName != "" && todoName.length < 124) {
+             val newToDo = ToDo(todoName, mutableListOf())
+             todoList.add(newToDo)
+             todo.value = todoList
+
+             uploadToDo(newToDo)
+//             Log.d(LOG_TAG, "Added todo: $todoName")
              true
          } else
              false
     }
 
-    fun insertToDoObject(toDo: ToDo) {
-        todoList.add(toDo)
-    }
+    fun insertToDoItem(index: Int, item: String, checked: Boolean = false): Boolean {
+        return if (item != "" && item.length < 50) {
+            todoList[index].items.add(ToDoItem(item, checked))
+            uploadToDo(todoList[index])
 
-    fun insertToDoItem(ToDoListID: Int, item: String): Boolean {
-        return if (item != "") {
-            todoList[ToDoListID].items.add(ToDoItem(item, false))
-            Log.d(LOG_TAG, "Updated todo: ${todoList[ToDoListID]}. Now has items: ${todoList[ToDoListID].items}")
-            saveToDoList(toDoListToJSON())
+            Log.d(LOG_TAG, "Updated todo: ${todoList[index]}. Now has items: ${todoList[index].items}")
             true
         } else
             false
     }
 
-    fun removeToDo(ToDoListID: Int) {
-        val todoItem = todoList[ToDoListID]
-        todoList.remove(todoItem)
-        Log.d(LOG_TAG, "Removed todo: $todoItem. ToDos left: $todoList")
+    fun insertToDoObject(todoO: ToDo) {
+        todoList.addToDo(todoO)
+        todo.value = todoList
 
-        saveToDoList(toDoListToJSON())
+        uploadToDo(todoO)
     }
 
-    fun removeToDo(todo: ToDo) {
-        todoList.remove(todo)
-        Log.d(LOG_TAG, "Removed todo: $todo. ToDos left: $todoList")
+    fun removeToDo(ID: Int) {
+        val toRemove:ToDo = getToDosByIndex(ID)
+        val todoRef = FirebaseStorage.getInstance().reference.child("$fbPath${toRemove.created}")
 
-        saveToDoList(toDoListToJSON())
-    }
+        todoList.remove(toRemove)
+        todo.value = todoList
 
-    fun removeToDoItem(ToDoListID: Int, ToDoItemID: Int) {
-        val item = todoList[ToDoListID].items[ToDoItemID]
-        todoList[ToDoListID].items.remove(item)
+        todoRef.delete().addOnCompleteListener {
+            Log.d(LOG_TAG, "Removed todo$ID: $toRemove. ToDos left: $todoList")
 
-        saveToDoList(toDoListToJSON())
-    }
+        }.addOnFailureListener {
+            // Adds todo back to list
+            todoList.addToDo(toRemove)
+            todo.value = todoList
 
-    fun toggleToDoItem(ToDoListID: Int, ToDoItemID: Int, checked: Boolean) {
-        todoList[ToDoListID].items[ToDoItemID].done = checked
+            Log.d(LOG_TAG, "Failed to remove $ID: $toRemove. ToDos left: $todoList")
 
-        saveToDoList(toDoListToJSON())
-    }
-
-    fun getToDoListName(ToDoListID: Int) : String {
-        return todoList[ToDoListID].toString()
-    }
-
-    fun getToDoItemChecked(ToDoListID: Int) : Int {
-        return todoList[ToDoListID].getAmountChecked()
-    }
-
-    fun getToDoSize(ToDoListID: Int) : Int {
-        return todoList[ToDoListID].items.size
-    }
-
-    private fun toDoListToJSON(): String {
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        return gson.toJson(todoList)
-    }
-
-//    private fun JSONToToDOList(JSON: String): MutableList<ToDo>? {
-//        val gson = Gson()
-//
-//    }
-
-    private fun saveToDoList(content: String) {
-
-        val file = File.createTempFile("ToDOList", "JSON")
-        FileOutputStream(file, false).bufferedWriter().use { writer ->
-            writer.write(content)
+            // Delete can succeed but not trigger OnCompleteListener (Timeout?)
+            downloadToDoList()
         }
-
-        uploadFile(file.toUri())
     }
 
-    private fun uploadFile(file: Uri) {
-        Log.d(LOG_TAG, "Uploading file to firebase")
+    fun removeToDoItem(index: Int, ToDoItemID: Int) {
+        val item = todoList[index].items[ToDoItemID]
+        todoList[index].items.remove(item)
+        uploadToDo(todoList[index])
+    }
 
-        val ref = FirebaseStorage.getInstance().reference.child(fbPath)
+    fun toggleToDoItem(index: Int, ToDoItemID: Int, checked: Boolean) {
+        todoList[index].items[ToDoItemID].done = checked
+        uploadToDo(todoList[index])
+    }
+
+    fun getToDoItemChecked(index: Int) : Int {
+        return todoList[index].getAmountChecked()
+    }
+
+    fun getToDoSize(index: Int) : Int {
+        return todoList[index].items.size
+    }
+
+    private fun todoToJSON(todo: ToDo): String {
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        return gson.toJson(todo)
+    }
+
+    private fun jsonToToDOList(JSON: String): ToDo {
+        val gson = Gson()
+        return gson.fromJson(JSON, ToDo::class.java)
+    }
+
+    private fun uploadToDo(data: ToDo) {
+        val file = File.createTempFile("ToDOList", "JSON")
+        FileOutputStream(file, false).bufferedWriter().use { it.write(todoToJSON(data)) }
+
+        upload(file.toUri(), data.created)
+        file.delete()
+    }
+
+    private fun upload(file: Uri, ID: Long) {
+        val ref = FirebaseStorage.getInstance().reference.child("$fbPath$ID")
         val uploadTask = ref.putFile(file)
 
         uploadTask.addOnSuccessListener {
-            Log.d(LOG_TAG, "successfully uploaded file: $it")
+//            Log.d(LOG_TAG, "successfully uploaded file: $file")
         }.addOnFailureListener{
             Log.d(LOG_TAG, "Failed to upload file: $file", it)
         }
     }
 
-    private fun downloadFile() {
-        Log.d(LOG_TAG, "Downloading file from firebase")
-        val storage = FirebaseStorage.getInstance()
-        val storageRef = storage.reference
-        val todoRef = storageRef.child(fbPath)
+    fun downloadToDoList() {
+        val ref = FirebaseStorage.getInstance().reference.child(fbFolder)
+        val uploadTask = ref.listAll()
 
-        val localFile = File.createTempFile("ToDOList", "JSON")
+        // resets list
+        todoList = mutableListOf()
 
-        todoRef.getFile(localFile).addOnSuccessListener {
-            val file: List<String> = localFile.readLines()
-            localFile.delete()
-        }.removeOnFailureListener {
-            Log.d(LOG_TAG, "Error downloading todo list", it)
+        // Downloads new list
+        uploadTask.addOnSuccessListener { listResult ->
+            listResult.items.forEach { item ->
+                downloadToDo(item)
+            }
+        }.addOnFailureListener {
+            Log.d(LOG_TAG, "Error downloading all the ToDo lists: ", it)
         }
     }
+
+    private fun downloadToDo(ref: StorageReference) {
+        val localFile = File.createTempFile("ToDOList", "JSON")
+        ref.getFile(localFile).addOnSuccessListener {
+            val jsonToDo: String = localFile.readLines().reduce { acc, s -> acc + s.trim() }
+            todoList.addToDo(jsonToToDOList(jsonToDo))
+
+            // Gives live date with new list
+            todo.value = todoList
+
+            localFile.delete()
+//            Log.d(LOG_TAG, "ToDo ID: ${ref.name}, JSON: $jsonToDo")
+        }.removeOnFailureListener { e ->
+            Log.d(LOG_TAG, "Exception downloading ToDo with ID: ${ref.name}", e)
+        }
+    }
+
+    // For uploading test data
+    fun uploadToDoList(list: MutableList<ToDo>){
+        list.forEach{
+            uploadToDo(it)
+        }
+    }
+}
+
+// sorts ToDos added by time created, so the list is consistent when syncing
+fun MutableList<ToDo>.addToDo(data: ToDo) {
+    this.add(data)
+    this.sortBy { it.created }
 }
