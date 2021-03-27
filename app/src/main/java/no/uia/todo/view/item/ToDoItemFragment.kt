@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.todo_item_fragment.view.*
 import no.uia.todo.databinding.TodoItemFragmentBinding
 import no.uia.todo.viewmodel.ToDoViewModel
@@ -33,19 +35,18 @@ class ToDoItemFragment : Fragment() {
         val view = binding.root
 
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
-        // TODO: This should be in a constructor in ToDoViewModel
-        viewModel.path = this.activity?.getExternalFilesDir(null)
 
         // Args, the ToDoList id, from ToDoListFragment
         val args: ToDoItemFragmentArgs by navArgs()
         val toDoListID = args.toDoItemId
 
+        val todoItem = viewModel.getToDosByIndex(toDoListID)
+
         // Sets toolbar title
-        view.itemTitle.text = viewModel.getToDoListName(toDoListID)
+        view.itemTitle.text = todoItem.title
 
         // Progressbar setup
         updateProgressbar(toDoListID)
-
 
         // Updates viewModel on setOnCheckedChangeListener
         val onChecked = { _: CompoundButton, isChecked:Boolean, toDoItemID:Int ->
@@ -53,9 +54,9 @@ class ToDoItemFragment : Fragment() {
             updateProgressbar(toDoListID)
         }
 
-        // Recycler view and adapter setup
-        val itemAdapter = ToDoItemAdapter(viewModel.getToDosByID(toDoListID).items, onChecked)
         binding.apply {
+            // Recycler view and adapter setup
+            val itemAdapter = ToDoItemAdapter(todoItem.items, onChecked)
             ToDoItemRecycler.apply {
                 adapter = itemAdapter
                 layoutManager = LinearLayoutManager(requireContext())
@@ -66,41 +67,36 @@ class ToDoItemFragment : Fragment() {
             ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
                 // onMove returns false as we don't want to use it
                 override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
-
+                // Deletes item by swiping either direction
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val pos = viewHolder.adapterPosition
                     viewModel.removeToDoItem(toDoListID, pos)
-
-                    updateProgressbar(toDoListID)
-
                     itemAdapter.notifyItemRemoved(pos)
                 }
             }).attachToRecyclerView(ToDoItemRecycler)
-        }
 
-        // new item button setup
-        binding.apply {
+
+            // new item button setup
             addItemButton.setOnClickListener {
-                val item = view.newItemEditText.text.toString()
+                val itemText = view.newItemEditText.text.toString()
                 newItemEditText.text.clear()
 
-                viewModel.insertToDoItem(toDoListID, item)
-                itemAdapter.notifyItemChanged(itemAdapter.itemCount)
+                if (viewModel.insertToDoItem(toDoListID, itemText)) {
+                    itemAdapter.notifyItemInserted(itemAdapter.itemCount)
 
-                updateProgressbar(toDoListID)
+                    updateProgressbar(toDoListID)
 
-                // TODO Fix this
-                // Scrolls down to new item
-                ToDoItemRecycler.adapter?.let { it1 ->
-                    ToDoItemRecycler.scrollToPosition(it1.itemCount)
+                    // Scrolls down to new item
+                    ToDoItemRecycler.smoothScrollToPosition(itemAdapter.itemCount)
+                } else {
+                    Toast.makeText(context, "Invalid name", Toast.LENGTH_SHORT).show()
                 }
             }
         }
-
         return view
     }
 
-    fun updateProgressbar(ID: Int) {
+    private fun updateProgressbar(ID: Int) {
         binding.apply {
             itemProgressbar.max = viewModel.getToDoSize(ID)
             itemProgressbar.progress = viewModel.getToDoItemChecked(ID)

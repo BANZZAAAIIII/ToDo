@@ -6,18 +6,18 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.todo_list_fragment.*
+import kotlinx.android.synthetic.main.todo_list_add_dialog.view.*
 import kotlinx.android.synthetic.main.todo_list_fragment.view.*
 import no.uia.todo.R
 import no.uia.todo.databinding.TodoListFragmentBinding
-import no.uia.todo.view.item.ToDoItemAdapter
 import no.uia.todo.viewmodel.ToDoViewModel
 
 class ToDoListFragment : Fragment() {
@@ -37,8 +37,7 @@ class ToDoListFragment : Fragment() {
         val view = binding.root
 
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
-        // TODO: This should be in a constructor in ToDoViewModel
-        viewModel.path = this.activity?.getExternalFilesDir(null)
+        viewModel.downloadToDoList()
 
         // Navigates to ToDoItemFragment with ToDoLists ID when ToDoList is clicked
         val onClickToDo = { pos:Int ->
@@ -48,7 +47,7 @@ class ToDoListFragment : Fragment() {
         }
 
         // Recycler view and adapter setup
-        val toDoAdapter = ToDoListAdapter(viewModel.getToDos(), onClickToDo)
+        val toDoAdapter = ToDoListAdapter(onClickToDo)
         binding.apply {
             ToDoListRecycler.apply {
                 adapter = toDoAdapter
@@ -63,30 +62,38 @@ class ToDoListFragment : Fragment() {
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val pos = viewHolder.adapterPosition
-                    val todo = viewModel.getToDosByID(pos)
-
-                    viewModel.removeToDo(todo)
-
-                    toDoAdapter.notifyItemRemoved(pos)
-
-                    /*
-                    ToDo: Fix this
-                    Inserts at the wrong position, should be the same as it was removed from
-                    and recycler view dos not update its view when added
+                    val todo = viewModel.getToDosByIndex(pos)
+                    viewModel.removeToDo(pos)
 
                     Snackbar.make(requireView(), "ToDo Deleted", Snackbar.LENGTH_LONG)
                             .setAction("Undo") {
                                 viewModel.insertToDoObject(todo)
-                                toDoAdapter.notifyItemChanged(toDoAdapter.itemCount)
                             }.show()
-                     */
                 }
             }).attachToRecyclerView(ToDoListRecycler)
         }
 
+        viewModel.todoListLD.observe(viewLifecycleOwner, {
+            toDoAdapter.submitList(it.toMutableList())
+//            Log.d(LOG_TAG, "Live Data, ToDo: $it")
+        })
+
         // Dialog to add new todoList
         view.add_ToDo_fab.setOnClickListener {
-            findNavController().navigate(R.id.toDoListAddDialog)
+            val dialog = BottomSheetDialog(requireContext())
+            val dialogView = layoutInflater.inflate(R.layout.todo_list_add_dialog, container, false)
+
+            dialogView.ToDo_add_list_btn.setOnClickListener {
+                val newToDoName = dialogView.ToDo_list_editText.text.toString()
+                if (viewModel.insertToDo(newToDoName)) {
+                    toDoAdapter.notifyItemInserted(toDoAdapter.itemCount)
+                    dialog.dismiss()
+                } else {
+                    Toast.makeText(context, "Invalid name", Toast.LENGTH_SHORT).show()
+                }
+            }
+            dialog.setContentView(dialogView)
+            dialog.show()
         }
 
         return view
