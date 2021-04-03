@@ -1,12 +1,13 @@
 package no.uia.todo.view.list
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -29,9 +30,9 @@ class ToDoListFragment : Fragment() {
     private lateinit var viewModel: ToDoViewModel
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View {
         _binding = TodoListFragmentBinding.inflate(layoutInflater, container, false)
         val view = binding.root
@@ -39,7 +40,7 @@ class ToDoListFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(ToDoViewModel::class.java)
 
 
-        val onClickToDo = { pos:Int ->
+        val onClickToDo = { pos: Int ->
             val arg = ToDoListFragmentDirections.actionToDoListFragmentToToDoItemFragment(pos)
             findNavController().navigate(arg)
         }
@@ -54,16 +55,16 @@ class ToDoListFragment : Fragment() {
                 setHasFixedSize(true)
             }
             // Sets on swipe action to delete ToDoitem
-            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT ) {
+            ItemTouchHelper(object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
                 // onMove returns false as we don't want to use it
-                override fun onMove(recyclerView: RecyclerView,viewHolder: RecyclerView.ViewHolder,target: RecyclerView.ViewHolder): Boolean = false
+                override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val pos = viewHolder.adapterPosition
                     val todo = viewModel.getToDosByIndex(pos)
                     viewModel.removeToDo(pos)
 
-                    // Undo Snackbar when deleting
+                    // Snackbar with undo button when deleting
                     Snackbar.make(requireView(), "ToDo Deleted", Snackbar.LENGTH_LONG)
                             .setAction("Undo") {
                                 viewModel.insertToDoObject(todo)
@@ -72,11 +73,23 @@ class ToDoListFragment : Fragment() {
             }).attachToRecyclerView(ToDoListRecycler)
         }
 
-        // Gets all the ToDos from firebase
-        viewModel.downloadToDoList()
+        // Checks if the user is singed in, sets up observer if not and downloads todolist from firebase
+        if (viewModel.userLiveData.value != null) {
+            viewModel.downloadToDoList()
+            Log.v(LOG_TAG, "Downloading data")
+        } else {
+            viewModel.userLiveData.observe(viewLifecycleOwner, {
+                if (it != null) {
+                    viewModel.downloadToDoList()
+                    Log.v(LOG_TAG, "Downloading data")
+                    Log.d(LOG_TAG, "User live data $it")
+                }
+            })
+        }
+        // Updates adapter when new todo is downloaded
         viewModel.liveDataToDoList.observe(viewLifecycleOwner, {
             toDoAdapter.submitList(it.toMutableList())
-//            Log.d(LOG_TAG, "Live Data, ToDo: $it")
+            Log.v(LOG_TAG, "Live Data, ToDo: $it")
         })
 
         // Dialog to add new todoList
@@ -96,7 +109,6 @@ class ToDoListFragment : Fragment() {
             dialog.setContentView(dialogView)
             dialog.show()
         }
-
         return view
     }
 }

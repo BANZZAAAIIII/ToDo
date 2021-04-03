@@ -25,21 +25,17 @@ class MainActivity : AppCompatActivity() {
         auth = Firebase.auth
         signInAnonymously()
 
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //setSupportActionBar(binding.root.toolbar)
-        nav = Navigation.findNavController(
-                this, R.id.nav_fragment)
-
+        nav = Navigation.findNavController(this, R.id.nav_fragment)
     }
 
     private fun signInAnonymously() {
         auth.signInAnonymously().addOnSuccessListener {
-            Log.d(LOG_TAG, "Signed in Anonymously with user: ${it.user?.toString()}")
+            Log.v(LOG_TAG, "Signed in Anonymously with user: ${it.user?.uid}")
         }.addOnFailureListener {
-            Log.d(LOG_TAG, "Signed in Anonymously failed", it)
+            Log.e(LOG_TAG, "Signed in Anonymously failed", it)
         }
     }
 }
